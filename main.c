@@ -9,7 +9,6 @@
 
 static void repl() {
   char line[1024];
-  uint8_t l = 4;
   for (;;) {
     printf("> ");
 
