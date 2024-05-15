@@ -13,12 +13,13 @@ typedef struct {
   int count;            // number of bytes in the code array
   int capacity;         // number of bytes that can fit in the code array
   uint8_t *code;        // array of bytes
+  int *lines;           // array of lines (parallel to code array)
   ValueArray constants; // array of constants
 } Chunk;
 
 void initChunk(Chunk *chunk);
 void freeChunk(Chunk *chunk);
-void writeChunk(Chunk *chunk, uint8_t byte);
+void writeChunk(Chunk *chunk, uint8_t byte, int line);
 int addConstant(Chunk *chunk, Value value);
 
 #endif // !clox_chunk_h
