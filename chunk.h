@@ -6,7 +6,15 @@
 
 // Each instruction has a one-byte operation code.
 // This OpCode enum controls which kind of instruction we are dealing with.
-typedef enum { OP_CONSTANT, OP_NEGATE, OP_RETURN } OpCode;
+typedef enum {
+  OP_CONSTANT,
+  OP_ADD,
+  OP_SUBTRACT,
+  OP_MULTIPLY,
+  OP_DIVIDE,
+  OP_NEGATE,
+  OP_RETURN
+} OpCode;
 
 // A sequence of bytecode instructions that the VM will execute.
 typedef struct {

@@ -7,10 +7,10 @@
 #define STACK_MAX 256
 
 typedef struct {
-  Chunk *chunk;
-  uint8_t *ip;
-  Value stack[STACK_MAX];
-  Value *stack_top;
+  Chunk *chunk; // the chunk of code we are executing
+  uint8_t *ip;  // instruction pointer (points to the instructionn to be exec)
+  Value stack[STACK_MAX]; // array of values (just a pointer) with a fixed size
+  Value *stack_top;       // pointer to the top of the array (stack)
 } VM;
 
 typedef enum {
