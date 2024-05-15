@@ -1,9 +1,7 @@
-// clang-format off
-#include "stdlib.h"
-
 #include "chunk.h"
+
 #include "memory.h"
-// clang-format on
+#include "stdlib.h"
 
 void initChunk(Chunk *chunk) {
   chunk->count = 0;

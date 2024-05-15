@@ -1,8 +1,6 @@
-// clang-format off
-#include <stdlib.h>
-
 #include "memory.h"
-// clang-format on
+
+#include <stdlib.h>
 
 void *reallocate(void *pointer, size_t old_size, size_t new_size) {
   if (new_size == 0) {
