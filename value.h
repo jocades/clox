@@ -8,12 +8,12 @@ typedef double Value;
 typedef struct {
   int capacity;
   int count;
-  Value *values;
+  Value* values;
 } ValueArray;
 
-void initValueArray(ValueArray *array);
-void writeValueArray(ValueArray *array, Value value);
-void freeValueArray(ValueArray *array);
+void initValueArray(ValueArray* array);
+void writeValueArray(ValueArray* array, Value value);
+void freeValueArray(ValueArray* array);
 void printValue(Value value);
 
-#endif // !clox_value_h
+#endif  // !clox_value_h

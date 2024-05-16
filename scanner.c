@@ -90,13 +90,8 @@ static void skipWhitespace() {
   }
 }
 
-/* clang-format off */
-static TokenType checkKeyword(
-  int start,
-  int length,
-  const char* rest,
-  TokenType type
-) {
+static TokenType checkKeyword(int start, int length, const char* rest,
+                              TokenType type) {
   if (scanner.current - scanner.start == start + length &&
       memcmp(scanner.start + start, rest, length) == 0) {
     return type;
@@ -104,7 +99,6 @@ static TokenType checkKeyword(
 
   return TOKEN_IDENTIFIER;
 }
-/* clang-format on */
 
 static TokenType identifierType() {
   switch (scanner.start[0]) {

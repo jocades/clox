@@ -21,8 +21,8 @@ static void repl() {
   }
 }
 
-static char *readFile(const char *path) {
-  FILE *file = fopen(path, "rb");
+static char* readFile(const char* path) {
+  FILE* file = fopen(path, "rb");
   if (file == NULL) {
     fprintf(stderr, "Could not open file \"%s\".\n", path);
     exit(74);
@@ -32,7 +32,7 @@ static char *readFile(const char *path) {
   size_t file_size = ftell(file);
   rewind(file);
 
-  char *buffer = (char *)malloc(file_size + 1);
+  char* buffer = (char*)malloc(file_size + 1);
   if (buffer == NULL) {
     fprintf(stderr, "Not enough memory to read \"%s\".\n", path);
     exit(74);
@@ -50,8 +50,8 @@ static char *readFile(const char *path) {
   return buffer;
 }
 
-static void runFile(const char *path) {
-  char *source = readFile(path);
+static void runFile(const char* path) {
+  char* source = readFile(path);
   InterpretResult result = interpret(source);
   free(source);
 
@@ -59,7 +59,7 @@ static void runFile(const char *path) {
   if (result == INTERPRET_RUNTIME_ERROR) exit(70);
 }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char* argv[]) {
   initVM();
 
   if (argc == 1) {

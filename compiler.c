@@ -1,6 +1,7 @@
 #include "compiler.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "scanner.h"
 
@@ -12,11 +13,11 @@ typedef struct {
 } Parser;
 
 Parser parser;
-Chunk *compiling_chunk;
+Chunk* compiling_chunk;
 
-static Chunk *currentChunk() { return compiling_chunk; }
+static Chunk* currentChunk() { return compiling_chunk; }
 
-static void errorAt(Token *token, const char *msg) {
+static void errorAt(Token* token, const char* msg) {
   if (parser.panic_mode) return;
   parser.panic_mode = true;
   fprintf(stderr, "[line %d] Error", token->line);
@@ -33,9 +34,9 @@ static void errorAt(Token *token, const char *msg) {
   parser.had_error = true;
 }
 
-static void error(const char *msg) { errorAt(&parser.previous, msg); }
+static void error(const char* msg) { errorAt(&parser.previous, msg); }
 
-static void errorAtCurrent(const char *msg) { errorAt(&parser.current, msg); }
+static void errorAtCurrent(const char* msg) { errorAt(&parser.current, msg); }
 
 static void advance() {
   parser.previous = parser.current;
@@ -48,7 +49,7 @@ static void advance() {
   }
 }
 
-static void consume(TokenType type, const char *msg) {
+static void consume(TokenType type, const char* msg) {
   if (parser.current.type == type) {
     advance();
     return;
@@ -68,11 +69,51 @@ static void emitBytes(uint8_t byte1, uint8_t byte2) {
 
 static void emitReturn() { emitByte(OP_RETURN); }
 
+static uint8_t makeConstant(Value value) {
+  int constant = addConstant(currentChunk(), value);
+  if (constant > UINT8_MAX) {
+    error("Too many constants in one chunk.");
+    return 0;
+  }
+
+  return (uint8_t)constant;
+}
+
+static void emitConstant(Value value) {
+  emitBytes(OP_CONSTANT, makeConstant(value));
+}
+
 static void endCompiler() { emitReturn(); }
+
+static void grouping() {
+  expression();
+  consume(TOKEN_RIGHT_PAREN, "Expected ')' after expression.");
+}
+
+static void number() {
+  double value = strtod(parser.previous.start, NULL);
+  emitConstant(value);
+}
+
+static void unary() {
+  TokenType operator_type = parser.previous.type;
+
+  // Compile the operand.
+  expression();
+
+  // Emit the operator instruction.
+  switch (operator_type) {
+    case TOKEN_MINUS:
+      emitByte(OP_NEGATE);
+      break;
+    default:
+      return;  // Unreachable.
+  }
+}
 
 static void expression() {}
 
-bool compile(const char *source, Chunk *chunk) {
+bool compile(const char* source, Chunk* chunk) {
   initScanner(source);
   compiling_chunk = chunk;
 
