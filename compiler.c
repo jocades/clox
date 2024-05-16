@@ -154,7 +154,7 @@ static void unary() {
   TokenType operator_type = parser.previous.type;
 
   // Compile the operand.
-  expression();
+  parsePrecedence(PREC_UNARY);
 
   // Emit the operator instruction.
   switch (operator_type) {
@@ -230,19 +230,11 @@ static ParseRule* getRule(TokenType type) { return &rules[type]; }
 
 static void expression() {
   parsePrecedence(PREC_ASSIGNMENT);
-  // Compile the operand.
-  parsePrecedence(PREC_UNARY);
-
-  // Emit the operator instruction.
 }
 
 bool compile(const char* source, Chunk* chunk) {
   initScanner(source);
   compiling_chunk = chunk;
-
-  printf("Compiling %s\n", source);
-  // print chunk
-  printf("Chunk: %d\n", chunk->count);
 
   parser.had_error = false;
   parser.panic_mode = false;
