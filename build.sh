@@ -29,7 +29,7 @@ function build() {
     SOURCES=$(find . -maxdepth 1 -name "*.c")
     echo "Compiling..."
     # gcc main.c common.c -o a.out
-    $CC $CFLAGS $SOURCES -o $OUTPUT
+    $CC -g $CFLAGS $SOURCES -o $OUTPUT
 
 }
 

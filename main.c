@@ -8,17 +8,19 @@
 #include "vm.h"
 
 static void repl() {
-  char line[1024];
-  for (;;) {
-    printf("> ");
+  // char line[1024];
+//   for (;;) {
+//     printf("> ");
 
-    if (!fgets(line, sizeof(line), stdin)) {
-      printf("\n");
-      break;
-    }
+//     if (!fgets(line, sizeof(line), stdin)) {
+//       printf("\n");
+//       break;
+//     }
 
-    interpret(line);
-  }
+//     interpret(line);
+//   }
+  char line[] = "2 + 2 * 2";
+  interpret(line);
 }
 
 static char* readFile(const char* path) {
