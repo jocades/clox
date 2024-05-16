@@ -19,7 +19,7 @@ static void repl() {
 
 //     interpret(line);
 //   }
-  char line[] = "2 + 2 * 2";
+  char line[] = "2 + 2";
   interpret(line);
 }
 
