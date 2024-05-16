@@ -1,5 +1,6 @@
 #include "scanner.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "common.h"
@@ -51,6 +52,9 @@ static Token makeToken(TokenType type) {
   token.start = scanner.start;
   token.length = (int)(scanner.current - scanner.start);
   token.line = scanner.line;
+
+  printf("Token: %.*s\n", token.length, token.start);
+
   return token;
 }
 
@@ -90,8 +94,9 @@ static void skipWhitespace() {
   }
 }
 
-static TokenType checkKeyword(int start, int length, const char* rest,
-                              TokenType type) {
+static TokenType checkKeyword(
+    int start, int length, const char* rest, TokenType type
+) {
   if (scanner.current - scanner.start == start + length &&
       memcmp(scanner.start + start, rest, length) == 0) {
     return type;

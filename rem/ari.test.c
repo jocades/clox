@@ -2,9 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char* argv[]) {
   int a = 10;
-  int *p = &a;
+  int* p = &a;
   printf("a: %d\n", a);
   printf("p: %p\n", p);
   printf("*p: %d\n", *p);
@@ -16,6 +16,7 @@ int main(int argc, const char *argv[]) {
 
   // arrays
   // an array is really just a pointer to the first element
+  // but it knows the size of the array so we can access the elements liek
   int arr[5] = {1, 2, 3, 4, 5};
 
   // acessing it will increase the pointer by the size of the type of the array
@@ -59,7 +60,7 @@ int main(int argc, const char *argv[]) {
     int y;
   };
 
-  struct Point *point = malloc(sizeof(struct Point));
+  struct Point* point = malloc(sizeof(struct Point));
   (*point).x = 5;
   point->x = 10;
 
@@ -89,8 +90,8 @@ int main(int argc, const char *argv[]) {
   // for example, we have a pointer to an integer but we need to access it as a
   // character we can cast the pointer to a character pointer
   int b = 65;
-  int *pb = &b;
-  char *pc = (char *)pb;
+  int* pb = &b;
+  char* pc = (char*)pb;
   printf("b: %d\n", b);
   printf("*pb: %d\n", *pb);
   printf("*pc: %c\n", *pc);
@@ -99,8 +100,8 @@ int main(int argc, const char *argv[]) {
   // void pointer is a generic pointer that can point to any type
   // but we can't dereference it directly
   // we need to cast it to the correct type before dereferencing it
-  void *pv = pb;
-  printf("*pv: %d\n", *(int *)pv);
+  void* pv = pb;
+  printf("*pv: %d\n", *(int*)pv);
 
   return 0;
 }
