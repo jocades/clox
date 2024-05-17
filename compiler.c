@@ -147,7 +147,7 @@ static void grouping() {
 
 static void number() {
   double value = strtod(parser.previous.start, NULL);
-  emitConstant(value);
+  emitConstant(NUMBER_VAL(value));
 }
 
 static void unary() {
@@ -158,11 +158,8 @@ static void unary() {
 
   // Emit the operator instruction.
   switch (operator_type) {
-    case TOKEN_MINUS:
-      emitByte(OP_NEGATE);
-      break;
-    default:
-      return;  // Unreachable.
+    case TOKEN_MINUS: emitByte(OP_NEGATE); break;
+    default: return;  // Unreachable.
   }
 }
 
@@ -228,9 +225,7 @@ static void parsePrecedence(Precedence precedence) {
 
 static ParseRule* getRule(TokenType type) { return &rules[type]; }
 
-static void expression() {
-  parsePrecedence(PREC_ASSIGNMENT);
-}
+static void expression() { parsePrecedence(PREC_ASSIGNMENT); }
 
 bool compile(const char* source, Chunk* chunk) {
   initScanner(source);

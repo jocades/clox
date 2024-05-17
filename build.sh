@@ -1,36 +1,15 @@
 #!/usr/bin/env bash
 
 CC=gcc
-# CFLAGS="-Wall -Wextra -std=c99"
-CFLAGS="-Wall -std=c99"
-
+CFLAGS="-g -Wall -std=c99"
 OUTPUT="a.out"
 
-function build_objects() {
+build() {
     SOURCES=$(find . -maxdepth 1 -name "*.c")
-    OBJECTS=""
-
-    for SRC in $SOURCES; do
-        OBJ="${SRC%.c}.o"
-        # only compile if the source file is newer than the object file
-        if [ ! -f $OBJ ] || [ $SRC -nt $OBJ ]; then
-            echo "Compiling $SRC..."
-            $CC $CFLAGS -c $SRC -o $OBJ
-        fi
-        OBJECTS="$OBJECTS $OBJ"
-    done
-
-    # link all .o files to create a single executable
-    echo "Linking..."
-    $GCC $OBJECTS -o $OUTPUT
-}
-
-function build() {
-    SOURCES=$(find . -maxdepth 1 -name "*.c")
+    CMD="$CC $CFLAGS $SOURCES -o $OUTPUT"
+    echo $CMD
     echo "Compiling..."
-    # gcc main.c common.c -o a.out
-    $CC -g $CFLAGS $SOURCES -o $OUTPUT
-
+    $CMD
 }
 
 RUN_AFTER_BUILD=0

@@ -5,4 +5,6 @@ Language: Cpp
 DerivePointerAlignment: false
 PointerAlignment: Left
 AlignAfterOpenBracket: BlockIndent
----
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortCaseLabelsOnASingleLine: true
