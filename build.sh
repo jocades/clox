@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 CC=gcc
-CFLAGS="-g -Wall -std=c99"
+CFLAGS="-g -Wall -Wextra -std=c99"
 OUTPUT="a.out"
 
 build() {
