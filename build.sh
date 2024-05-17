@@ -19,6 +19,11 @@ fi
 
 build
 
+if [ $? -ne 0 ]; then
+    echo "Build failed!"
+    exit 1
+fi
+
 if [ $RUN_AFTER_BUILD -eq 1 ]; then
     echo -e "Running $OUTPUT...\n"
     ./$OUTPUT
