@@ -5,9 +5,9 @@
 #include "vm.h"
 
 static void repl() {
-  char line[] = "2 + 2 * 2";
-  interpret(line);
-  /* for (;;) {
+  char line[1024];
+
+  for (;;) {
     printf("> ");
 
     if (!fgets(line, sizeof(line), stdin)) {
@@ -16,7 +16,7 @@ static void repl() {
     }
 
     interpret(line);
-  } */
+  }
 }
 
 static char* readFile(const char* path) {
