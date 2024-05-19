@@ -39,10 +39,18 @@ int main(int argc, const char* argv[]) {
   // 'char' occupies 1 byte of memory
 
   char str[] = "hello";
-  // same as
-  char str2[6] = {'h', 'e', 'l', 'l', 'o', '\0'};
-  printf("str: %s\n", str);
-  printf("str2: %s\n", str2);
+  // or using a pointer
+  char* str3 = "hello";
+  printf("str3: %s\n", str3);
+
+  // what is the differnece between char str[] and char* str?
+  // char str[] is an array of characters that is allocated on the stack
+  // and we can't change the size of the array after it is created
+  // char* str is a pointer to a character that is allocated on the stack
+  // and we can change the pointer to point to a different memory location
+  // but we can't change the size of the string
+  // we can't change the characters in the string because they are stored in
+  // read-only memory
 
   // we can access the characters in the string using the same pointer
   // arithmetic

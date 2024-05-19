@@ -20,8 +20,10 @@ fi
 build
 
 if [ $? -ne 0 ]; then
-    echo "Build failed!"
+    echo "Compilation failed."
     exit 1
+else
+    echo "Compilation successful."
 fi
 
 if [ $RUN_AFTER_BUILD -eq 1 ]; then
