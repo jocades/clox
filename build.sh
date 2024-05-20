@@ -5,7 +5,8 @@ CFLAGS="-g -Wall -Wextra -std=c99"
 OUTPUT="a.out"
 
 build() {
-    SOURCES=$(find . -maxdepth 1 -name "*.c")
+    SOURCES=$(find . -maxdepth 1 -name "*.c")" "$(find ./lib -maxdepth 1 -name "*.c")
+
     CMD="$CC $CFLAGS $SOURCES -o $OUTPUT"
     echo $CMD
     echo "Compiling..."

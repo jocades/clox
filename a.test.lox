@@ -1,1 +1,15 @@
-(-1 + 2) * 3 - -4
+var x = 10;
+var y = 10;
+
+{
+  print "-- block --";
+  print x + y;
+
+  print "shadowing";
+  var x = 20;
+  print x + y;
+
+  print "reassigning";
+  y = 20;
+  print x + 1;
+}
