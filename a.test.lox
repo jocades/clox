@@ -1,15 +1,13 @@
-var x = 10;
-var y = 10;
+//var global = "global";
+//
+//{
+//  var local = "local";
+//
+//  print global;
+//  print local;
+//}
 
-{
-  print "-- block --";
-  print x + y;
+var val = 2 + 2 == 4;
 
-  print "shadowing";
-  var x = 20;
-  print x + y;
-
-  print "reassigning";
-  y = 20;
-  print x + 1;
-}
+if (val) print "hello";
+else print "bye";

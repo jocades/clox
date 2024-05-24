@@ -53,11 +53,18 @@ static bool match(char expected) {
 }
 
 static Token makeToken(TokenType type) {
-  Token token;
+  /* Token token;
   token.type = type;
   token.start = scanner.start;
   token.length = (int)(scanner.current - scanner.start);
-  token.line = scanner.line;
+  token.line = scanner.line; */
+  // or
+  Token token = {
+      .type = type,
+      .start = scanner.start,
+      .length = (int)(scanner.current - scanner.start),
+      .line = scanner.line
+  };
   return token;
 }
 

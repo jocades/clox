@@ -31,13 +31,11 @@ static void runFile(const char* path) {
 int main(int argc, const char* argv[]) {
   initVM();
 
-  char* path = "a.test.lox";
-
   if (argc == 1) {
     // repl();
-    runFile(path);
+    runFile("a.test.lox");
   } else if (argc == 2) {
-    // runFile(argv[1]);
+    runFile(argv[1]);
   } else {
     fprintf(stderr, "Usage: clox [path]\n");
     exit(64);
