@@ -125,6 +125,16 @@ static void emitBytes(uint8_t byte1, uint8_t byte2) {
   emitByte(byte2);
 }
 
+static void emitLoop(int loop_start) {
+  emitByte(OP_LOOP);
+
+  int offset = currentChunk()->count - loop_start + 2;
+  if (offset > UINT16_MAX) error("Loop body too large.");
+
+  emitByte((offset >> 8) & 0xff);
+  emitByte(offset & 0xff);
+}
+
 static int emitJump(uint8_t instruction) {
   emitByte(instruction);
   emitByte(0xff);
@@ -381,7 +391,7 @@ ParseRule rules[] = {
     [TOKEN_IDENTIFIER] = {variable, NULL, PREC_NONE},
     [TOKEN_STRING] = {string, NULL, PREC_NONE},
     [TOKEN_NUMBER] = {number, NULL, PREC_NONE},
-    [TOKEN_AND] = {NULL, and_, PREC_NONE},
+    [TOKEN_AND] = {NULL, and_, PREC_AND},
     [TOKEN_CLASS] = {NULL, NULL, PREC_NONE},
     [TOKEN_ELSE] = {NULL, NULL, PREC_NONE},
     [TOKEN_FALSE] = {literal, NULL, PREC_NONE},
@@ -389,7 +399,7 @@ ParseRule rules[] = {
     [TOKEN_FUN] = {NULL, NULL, PREC_NONE},
     [TOKEN_IF] = {NULL, NULL, PREC_NONE},
     [TOKEN_NIL] = {literal, NULL, PREC_NONE},
-    [TOKEN_OR] = {NULL, or_, PREC_NONE},
+    [TOKEN_OR] = {NULL, or_, PREC_OR},
     [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
     [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
     [TOKEN_SUPER] = {NULL, NULL, PREC_NONE},
@@ -482,6 +492,21 @@ static void printStatement() {
   emitByte(OP_PRINT);
 }
 
+static void whileStatement() {
+  int loop_start = currentChunk()->count;
+  consume(TOKEN_LEFT_PAREN, "Expected '(' after 'while'.");
+  expression();
+  consume(TOKEN_RIGHT_PAREN, "Expected ') afet condition.");
+
+  int exit_jump = emitJump(OP_JUMP_IF_FALSE);
+  emitByte(OP_POP);
+  statement();
+  emitLoop(loop_start);
+
+  patchJump(exit_jump);
+  emitByte(OP_POP);
+}
+
 static void synchronize() {
   parser.panic_mode = false;
 
@@ -517,6 +542,8 @@ static void declaration() {
 static void statement() {
   if (match(TOKEN_PRINT)) {
     printStatement();
+  } else if (match(TOKEN_WHILE)) {
+    whileStatement();
   } else if (match(TOKEN_LEFT_BRACE)) {
     beginScope();
     block();

@@ -32,8 +32,8 @@ int main(int argc, const char* argv[]) {
   initVM();
 
   if (argc == 1) {
-    // repl();
-    runFile("a.test.lox");
+    repl();
+    // runFile("a.test.lox");
   } else if (argc == 2) {
     runFile(argv[1]);
   } else {
