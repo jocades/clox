@@ -1,0 +1,8 @@
+var global = "global";
+
+{
+  var local = "local";
+
+  print global;
+  print local;
+}

@@ -1,0 +1,4 @@
+var val = 2 + 2 == 4;
+
+if (val) print "hello";
+else print "bye";
