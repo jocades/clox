@@ -31,6 +31,8 @@ static void runFile(const char* path) {
 int main(int argc, const char* argv[]) {
   initVM();
 
+  interpret("true and print \"hello\";");
+
   if (argc == 1) {
     repl();
   } else if (argc == 2) {

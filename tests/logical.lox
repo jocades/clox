@@ -1,0 +1,7 @@
+var what = true;
+
+true and true;
+
+// what and "truthy" and print "Done";
+
+// false or nil or true and print "Bye!";

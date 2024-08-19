@@ -2,7 +2,7 @@
 
 CMD="./lox"
 
-for file in test/*; do
+for file in tests/*; do
     if [ -f "$file" ]; then
         $CMD "$file" >/dev/null
 
