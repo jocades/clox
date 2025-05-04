@@ -1,33 +1,13 @@
 #!/usr/bin/env bash
 
-CC=gcc
-CFLAGS="-g -Wall -Wextra -std=c99"
-OUTPUT="lox"
+dst="./lox"
+src=$(fd . -e c -tf -d 1)" "$(fd . lib -e c -tf -d 1)
+flags="-std=c99 -Wall"
 
-build() {
-    SOURCES=$(find . -maxdepth 1 -name "*.c")" "$(find ./lib -maxdepth 1 -name "*.c")
+cmd="clang -o $dst $src $flags"
 
-    CMD="$CC $CFLAGS $SOURCES -o $OUTPUT"
-    echo $CMD
-    echo -e "Compiling...\n"
-    $CMD
-}
-
-RUN_AFTER_BUILD=0
-if [ "$1" == "-r" ] || [ $"1" == "--run" ]; then
-    RUN_AFTER_BUILD=1
-fi
-
-build
-
-if [ $? -ne 0 ]; then
-    echo "Compilation failed."
-    exit 1
-else
-    echo "Compilation successful."
-fi
-
-if [ $RUN_AFTER_BUILD -eq 1 ]; then
-    echo -e "Running $OUTPUT...\n"
-    ./$OUTPUT
+if $cmd; then
+    if [ "$1" == "-r" ]; then
+        $dst
+    fi
 fi
