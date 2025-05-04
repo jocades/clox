@@ -1,9 +1,8 @@
 #include "scanner.h"
 
-#include <stdio.h>
 #include <string.h>
 
-#include "common.h"
+#include "common.h"  // IWYU pragma: keep
 
 typedef struct {
   const char* start;
@@ -53,17 +52,11 @@ static bool match(char expected) {
 }
 
 static Token makeToken(TokenType type) {
-  /* Token token;
-  token.type = type;
-  token.start = scanner.start;
-  token.length = (int)(scanner.current - scanner.start);
-  token.line = scanner.line; */
-  // or
   Token token = {
-      .type = type,
-      .start = scanner.start,
-      .length = (int)(scanner.current - scanner.start),
-      .line = scanner.line
+    .type = type,
+    .start = scanner.start,
+    .length = (int)(scanner.current - scanner.start),
+    .line = scanner.line
   };
   return token;
 }
@@ -101,9 +94,7 @@ static void skipWhitespace() {
   }
 }
 
-static TokenType checkKeyword(
-    int start, int length, const char* rest, TokenType type
-) {
+static TokenType checkKeyword(int start, int length, const char* rest, TokenType type) {
   if (scanner.current - scanner.start == start + length &&
       memcmp(scanner.start + start, rest, length) == 0) {
     return type;
@@ -204,8 +195,7 @@ Token scanToken() {
     case '!': return makeToken(match('=') ? TOKEN_BANG_EQUAL : TOKEN_BANG);
     case '=': return makeToken(match('=') ? TOKEN_EQUAL_EQUAL : TOKEN_EQUAL);
     case '<': return makeToken(match('=') ? TOKEN_LESS_EQUAL : TOKEN_LESS);
-    case '>':
-      return makeToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
+    case '>': return makeToken(match('=') ? TOKEN_GREATER_EQUAL : TOKEN_GREATER);
     case '"': return string();
   }
 

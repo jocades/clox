@@ -1,7 +1,7 @@
 #ifndef clox_object_h
 #define clox_object_h
 
-#include "common.h"
+#include "common.h"  // IWYU pragma: keep
 #include "value.h"
 
 #define OBJ_TYPE(value) (AS_OBJ(value)->type)

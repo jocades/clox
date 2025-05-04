@@ -1,7 +1,7 @@
 #ifndef clox_chunk_h
 #define clox_chunk_h
 
-#include "common.h"
+#include "common.h"  // IWYU pragma: keep
 #include "value.h"
 
 // Each instruction has a one-byte operation code.

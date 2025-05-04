@@ -8,8 +8,7 @@
 #include "value.h"
 #include "vm.h"
 
-#define ALLOCATE_OBJ(type, object_type) \
-  (type*)allocateObject(sizeof(type), object_type)
+#define ALLOCATE_OBJ(type, object_type) (type*)allocateObject(sizeof(type), object_type)
 
 static Obj* allocateObject(size_t size, ObjType type) {
   Obj* object = (Obj*)reallocate(NULL, 0, size);
@@ -33,7 +32,7 @@ static ObjString* allocateString(char* chars, int length, uint32_t hash) {
 static uint32_t hashString(const char* key, int length) {
   uint32_t hash = 2166136261u;
   for (int i = 0; i < length; i++) {
-    hash ^= (uint8_t)key[i];  // XOR
+    hash ^= (uint8_t)key[i];
     hash *= 16777619;
   }
   return hash;
