@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 dst="./lox"
-src=$(fd . -e c -tf -d 1)" "$(fd . lib -e c -tf -d 1)
+src=$(fd . -e c -tf)
 flags="-std=c99 -Wall"
 
 cmd="clang -o $dst $src $flags"
