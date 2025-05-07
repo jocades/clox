@@ -458,7 +458,7 @@ static void varDeclaration() {
 
 static void expressionStatement() {
   expression();
-  consume(TOKEN_SEMICOLON, "Expected ';' after expression");
+  consume(TOKEN_SEMICOLON, "Expected ';' after expression.");
   emitByte(OP_POP);
 }
 
@@ -535,7 +535,7 @@ static void whileStatement() {
   int loop_start = currentChunk()->count;
   consume(TOKEN_LEFT_PAREN, "Expected '(' after 'while'.");
   expression();
-  consume(TOKEN_RIGHT_PAREN, "Expected ') afet condition.");
+  consume(TOKEN_RIGHT_PAREN, "Expected ')' after condition.");
 
   int exit_jump = emitJump(OP_JUMP_IF_FALSE);
   emitByte(OP_POP);
@@ -581,16 +581,17 @@ static void declaration() {
 static void statement() {
   if (match(TOKEN_PRINT)) {
     printStatement();
+  } else if (match(TOKEN_FOR)) {
+    forStatement();
+
+  } else if (match(TOKEN_IF)) {
+    ifStatement();
   } else if (match(TOKEN_WHILE)) {
     whileStatement();
   } else if (match(TOKEN_LEFT_BRACE)) {
     beginScope();
     block();
     endScope();
-  } else if (match(TOKEN_FOR)) {
-    forStatement();
-  } else if (match(TOKEN_IF)) {
-    ifStatement();
   } else {
     expressionStatement();
   }
