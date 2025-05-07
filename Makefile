@@ -5,7 +5,7 @@ ifeq ($(MODE),debug)
 	CFLAGS += -O0 -g
 	BUILD_DIR := build/debug
 else
-	CLFAGS += -O2 -flto
+	CFLAGS += -O2 -flto
 	BUILD_DIR := build/release
 endif
 
