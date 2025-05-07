@@ -583,7 +583,6 @@ static void statement() {
     printStatement();
   } else if (match(TOKEN_FOR)) {
     forStatement();
-
   } else if (match(TOKEN_IF)) {
     ifStatement();
   } else if (match(TOKEN_WHILE)) {
