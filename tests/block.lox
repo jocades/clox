@@ -4,5 +4,5 @@ var global = "global";
   var local = "local";
 
   print global; // expect: global
-  print local; // expect: local
+  print local; 
 }

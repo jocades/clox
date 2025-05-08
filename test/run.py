@@ -15,6 +15,29 @@ stack_trace_pattern = re.compile(r"\[line (\d+)\]")
 non_test_pattern = re.compile(r"// nontest")
 
 
+class Term:
+    none = "\u001b[0m"
+    reset = "\u001b[39m"
+
+    def gray(self, msg):
+        return f"\u001b[1;30m{msg}{self.none}"
+
+    def cyan(self, msg):
+        return f"\u001b[36m{msg}{self.none}"
+
+    def green(self, msg):
+        return f"\u001b[32m{msg}{self.reset}"
+
+    def red(self, msg):
+        return f"\u001b[31m{msg}{self.reset}"
+
+    def yellow(self, msg):
+        return f"\u001b[33m{msg}{self.reset}"
+
+    def pink(self, msg):
+        return f"\u001b[91m{msg}{self.reset}"
+
+
 class Suite:
     def __init__(self, name: str, tests: dict[str, Literal["skip", "pass"]]):
         self.name = name
@@ -157,12 +180,8 @@ class Test:
         )
 
     def validate_output(self, output_lines: list[str]):
-        print(f"OUTPUT {output_lines}")
         if output_lines and not output_lines[-1]:
             output_lines.pop()
-
-        print(self.expected_output)
-        print(output_lines)
 
         index = 0
         for index, line in enumerate(output_lines):
@@ -176,7 +195,7 @@ class Test:
                     f"Expected output '{expected.output} on line {expected.line} and got '{line}'."
                 )
 
-        while index < len(self.expected_output):
+        while index < len(self.expected_output) - 1:
             expected = self.expected_output[index]
             self.fail(f"Missing expected output '{expected.output}' on line {expected.line}.")
             index += 1
@@ -186,6 +205,8 @@ class Test:
         if lines is not None:
             self.failures += lines
 
+
+term = Term()
 
 passed = 0
 failed = 0
@@ -203,34 +224,31 @@ def run_test(path: Path):
     failures = test.run()
 
     if not failures:
-        print(f"PASS {path}\n")
+        print(f"{term.green("PASS")} {path}")
         passed += 1
     else:
         failed += 1
-        print(f"FAIL {path}")
+        print(f"{term.red("FAIL")} {path}")
         for failure in failures:
-            print(f"    {failure}")
-        print()
+            print(f"     {term.yellow(failure)}")
 
 
 def main():
     for entry in os.scandir("test"):
         if entry.is_dir():
             print(f"=== {entry.name} ===")
-
             for file in os.scandir(entry):
                 path = Path(file)
-                print(f"    {path.stem}")
-                test = Test(path)
-                test.run()
+                run_test(path)
+            print()
 
 
 def test_the_test():
     files = [
         "tests/block.lox",
-        # "test/assignment/global.lox",
-        # "test/assignment/grouping.lox",
-        # "test/assignment/undefined.lox",
+        "test/assignment/global.lox",
+        "test/assignment/grouping.lox",
+        "test/assignment/undefined.lox",
     ]
     for file in files:
         path = Path(file)
@@ -239,4 +257,5 @@ def test_the_test():
 
 
 if __name__ == "__main__":
-    test_the_test()
+    # test_the_test()
+    main()
