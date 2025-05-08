@@ -46,7 +46,15 @@ typedef struct {
   int depth;
 } Local;
 
+typedef enum {
+  TYPE_FUNCTION,
+  TYPE_SCRIPT
+} FunctionType;
+
 typedef struct {
+  ObjFunction* function;
+  FunctionType type;
+
   Local locals[UINT8_COUNT];
   int local_count;
   int scope_depth;
@@ -57,7 +65,7 @@ Compiler* current = NULL;
 Chunk* compiling_chunk;
 
 static Chunk* currentChunk() {
-  return compiling_chunk;
+  return &current->function->chunk;
 }
 
 static void errorAt(Token* token, const char* msg) {
@@ -171,19 +179,31 @@ static void patchJump(int offset) {
   currentChunk()->code[offset + 1] = jump & 0xff;
 }
 
-static void initCompiler(Compiler* compiler) {
+static void initCompiler(Compiler* compiler, FunctionType type) {
+  compiler->function = NULL;
+  compiler->type = type;
   compiler->local_count = 0;
   compiler->scope_depth = 0;
+  compiler->function = newFunction();
   current = compiler;
+
+  Local* local = &current->locals[current->local_count++];
+  local->depth = 0;
+  local->name.start = "";
+  local->name.length = 0;
 }
 
-static void endCompiler() {
+static ObjFunction* endCompiler() {
   emitReturn();
+  ObjFunction* function = current->function;
+
 #ifdef DEBUG_PRINT_CODE
   if (!parser.had_error) {
-    disassembleChunk(currentChunk(), "code");
+    disassembleChunk(currentChunk(), function->name != NULL ? function->name->chars : "<script>");
   }
 #endif
+
+  return function;
 }
 
 static void beginScope() {
@@ -596,11 +616,10 @@ static void statement() {
   }
 }
 
-bool compile(const char* source, Chunk* chunk) {
+ObjFunction* compile(const char* source) {
   initScanner(source);
   Compiler compiler;
-  initCompiler(&compiler);
-  compiling_chunk = chunk;
+  initCompiler(&compiler, TYPE_SCRIPT);
 
   parser.had_error = false;
   parser.panic_mode = false;
@@ -611,6 +630,6 @@ bool compile(const char* source, Chunk* chunk) {
     declaration();
   }
 
-  endCompiler();
-  return !parser.had_error;
+  ObjFunction* function = endCompiler();
+  return !parser.had_error ? NULL : function;
 }

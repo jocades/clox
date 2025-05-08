@@ -1,6 +1,6 @@
-#ifndef clox_lib_fs_h
-#define clox_lib_fs_h
+#ifndef clox_util_h
+#define clox_util_h
 
 char* readFile(const char* path);
 
-#endif  // !clox_lib_fs_h
+#endif  // !clox_util_h

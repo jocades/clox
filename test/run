@@ -1,3 +1,5 @@
+#!/usr/bin/env PYTHONDONTWRITEBYTECODE=1 python3
+
 import os
 import re
 import subprocess
@@ -5,6 +7,7 @@ from pathlib import Path
 from typing import Literal
 from dataclasses import dataclass
 
+import term
 
 expected_output_pattern = re.compile(r"// expect: ?(.*)")
 expected_error_pattern = re.compile(r"// (Error.*)")
@@ -13,29 +16,6 @@ expected_runtime_error_pattern = re.compile(r"// expect runtime error: (.+)")
 syntax_error_pattern = re.compile(r"\[.*line (\d+)\] (Error.+)")
 stack_trace_pattern = re.compile(r"\[line (\d+)\]")
 non_test_pattern = re.compile(r"// nontest")
-
-
-class Term:
-    none = "\u001b[0m"
-    reset = "\u001b[39m"
-
-    def gray(self, msg):
-        return f"\u001b[1;30m{msg}{self.none}"
-
-    def cyan(self, msg):
-        return f"\u001b[36m{msg}{self.none}"
-
-    def green(self, msg):
-        return f"\u001b[32m{msg}{self.reset}"
-
-    def red(self, msg):
-        return f"\u001b[31m{msg}{self.reset}"
-
-    def yellow(self, msg):
-        return f"\u001b[33m{msg}{self.reset}"
-
-    def pink(self, msg):
-        return f"\u001b[91m{msg}{self.reset}"
 
 
 class Suite:
@@ -205,8 +185,6 @@ class Test:
         if lines is not None:
             self.failures += lines
 
-
-term = Term()
 
 passed = 0
 failed = 0

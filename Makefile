@@ -25,7 +25,10 @@ $(BUILD_DIR)/%.o: %.c
 run: $(BINARY)
 	./$(NAME)
 
+test: $(BINARY)
+	./test/run
+
 clean:
 	rm -rf build
 
-.PHONY: run clean
+.PHONY: run test clean

@@ -1,1 +1,1 @@
-true and print "x";
+true and print "x"; // expect runtime error: Error at 'print'
