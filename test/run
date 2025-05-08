@@ -2,9 +2,9 @@
 
 cmd="./lox"
 
-for file in tests/*; do
+for file in "$1"/*; do
     if [ -f "$file" ]; then
-        $cmd "$file" >/dev/null
+        $cmd "$file" 2>/dev/null
 
         if [ $? -eq 0 ]; then
             echo -e "\033[32mOK\033[0m   | $(basename $file)"

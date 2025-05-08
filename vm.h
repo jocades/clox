@@ -9,11 +9,11 @@
 typedef struct {
   Chunk* chunk;            // the chunk of code we are executing
   uint8_t* ip;             // instruction pointer (points to the instructionn to be exec)
-  Value stack[STACK_MAX];  // array of values (just a pointer) with a fixed size
+  Value stack[STACK_MAX];  // array of values with a fixed size
   Value* stack_top;        // pointer to the top of the array (stack)
-  Table globals;
-  Table strings;  // table of strings
-  Obj* objects;   // linked list of objects for the garbage collector
+  Table globals;           // table of global variables
+  Table strings;           // table of unique strings
+  Obj* objects;            // linked list of objects for the garbage collector
 } VM;
 
 typedef enum {

@@ -1,0 +1,242 @@
+import os
+import re
+import subprocess
+from pathlib import Path
+from typing import Literal
+from dataclasses import dataclass
+
+
+expected_output_pattern = re.compile(r"// expect: ?(.*)")
+expected_error_pattern = re.compile(r"// (Error.*)")
+error_line_pattern = re.compile(r"// \[((java|c) )?line (\d+)\] (Error.*)")
+expected_runtime_error_pattern = re.compile(r"// expect runtime error: (.+)")
+syntax_error_pattern = re.compile(r"\[.*line (\d+)\] (Error.+)")
+stack_trace_pattern = re.compile(r"\[line (\d+)\]")
+non_test_pattern = re.compile(r"// nontest")
+
+
+class Suite:
+    def __init__(self, name: str, tests: dict[str, Literal["skip", "pass"]]):
+        self.name = name
+        self.tests = tests
+
+    def run(self):
+        pass
+
+
+@dataclass
+class ExpectedOutput:
+    line: int
+    output: str
+
+
+class Test:
+    def __init__(self, path: Path):
+        self.path = path
+        self.expected_output: list[ExpectedOutput] = []
+        self.expected_errors: set[str] = set()
+        self.expected_runtime_error: str | None = None
+        self.runtime_error_line = 0
+        self.expected_exit_code = 0
+        self.failures: list[str] = []
+
+    def parse(self) -> bool:
+        lines = self.path.read_text().splitlines()
+        for line_num, line in enumerate(lines, start=1):
+            if match := expected_output_pattern.search(line):
+                self.expected_output.append(ExpectedOutput(line_num, match.group(1)))
+                continue
+
+            if match := expected_error_pattern.search(line):
+                self.expected_errors.add(f"[{line_num}] {match.group(1)}")
+                # If a compile time error is expected it should exit with EX_DATAERR
+                self.expected_exit_code = 65
+                continue
+
+            # TODO: error_line_pattern
+
+            if match := expected_runtime_error_pattern.search(line):
+                self.runtime_error_line = line_num
+                self.expected_runtime_error = match.group(1)
+                # If we expect a runtime error, it should exit with EX_SOFTWARE.
+                self.expected_exit_code = 70
+
+        if self.expected_runtime_error is not None and self.expected_errors:
+            print(f"TEST ERROR: {self.path}")
+            print("    Cannot expect both compile and runtime errors.")
+            return False
+
+        return True
+
+    def run(self) -> list[str]:
+        child = subprocess.run(
+            ["./lox", self.path],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+
+        output_lines = child.stdout.splitlines()
+        error_lines = child.stderr.splitlines()
+
+        if self.expected_runtime_error is not None:
+            self.validate_runtime_error(error_lines)
+        else:
+            self.validate_compile_errors(error_lines)
+
+        self.validate_exit_code(child.returncode, error_lines)
+        self.validate_output(output_lines)
+
+        return self.failures
+
+    def validate_runtime_error(self, error_lines: list[str]):
+        expected = f"Expected runtime error '{self.expected_runtime_error}'"
+
+        if len(error_lines) < 2:
+            self.fail(f"{expected} and got none.")
+            return
+
+        if error_lines[0] != self.expected_runtime_error:
+            self.fail(f"{expected} and got:")
+            self.fail(error_lines[0])
+
+        # Make sure the stack trace has the right line
+        match: re.Match | None = None
+        stack_lines = error_lines[1:]
+        for line in stack_lines:
+            match = stack_trace_pattern.search(line)
+            if match is not None:
+                break
+
+        if match is None:
+            self.fail("Expected stack trace ang got:", stack_lines)
+        else:
+            stack_line = int(match.group(1))
+            if stack_line != self.runtime_error_line:
+                self.fail(
+                    f"Expected runtime error on line {self.runtime_error_line} but was on line {stack_line}"
+                )
+
+    def validate_compile_errors(self, error_lines: list[str]):
+        found_errors: list[str] = []
+        unexpected_count = 0
+        for line in error_lines:
+            if match := syntax_error_pattern.search(line):
+                error = f"[{match.group(1)}] {match.group(2)}"
+                if error in self.expected_errors:
+                    found_errors.append(error)
+                else:
+                    if unexpected_count < 10:
+                        self.fail("Unexpected error:")
+                        self.fail(line)
+                        unexpected_count += 1
+            elif line:
+                if unexpected_count < 10:
+                    self.fail("Unexpected output on stderr:")
+                    self.fail(line)
+                unexpected_count += 1
+
+        if unexpected_count > 10:
+            self.fail(f"(truncated {unexpected_count - 10} more...)")
+
+        # Validate that every expected error ocurred
+        for error in self.expected_errors.difference(found_errors):
+            self.fail(f"Missing expected error: {error}")
+
+    def validate_exit_code(self, exit_code: int, error_lines: list[str]):
+        if exit_code == self.expected_exit_code:
+            return
+
+        if len(error_lines) > 10:
+            error_lines = error_lines[:10]
+            error_lines.append("(truncated...)")
+
+        self.fail(
+            f"Expected exit code ${self.expected_exit_code} and got {exit_code}. Stderr:",
+            error_lines,
+        )
+
+    def validate_output(self, output_lines: list[str]):
+        print(f"OUTPUT {output_lines}")
+        if output_lines and not output_lines[-1]:
+            output_lines.pop()
+
+        print(self.expected_output)
+        print(output_lines)
+
+        index = 0
+        for index, line in enumerate(output_lines):
+            if index >= len(self.expected_output):
+                self.fail(f"Got output '{line}' when none was expected.")
+                continue
+
+            expected = self.expected_output[index]
+            if expected.output != line:
+                self.fail(
+                    f"Expected output '{expected.output} on line {expected.line} and got '{line}'."
+                )
+
+        while index < len(self.expected_output):
+            expected = self.expected_output[index]
+            self.fail(f"Missing expected output '{expected.output}' on line {expected.line}.")
+            index += 1
+
+    def fail(self, message: str, lines: list[str] | None = None):
+        self.failures.append(message)
+        if lines is not None:
+            self.failures += lines
+
+
+passed = 0
+failed = 0
+
+
+def run_test(path: Path):
+    global passed
+    global failed
+
+    test = Test(path)
+
+    if not test.parse():
+        return
+
+    failures = test.run()
+
+    if not failures:
+        print(f"PASS {path}\n")
+        passed += 1
+    else:
+        failed += 1
+        print(f"FAIL {path}")
+        for failure in failures:
+            print(f"    {failure}")
+        print()
+
+
+def main():
+    for entry in os.scandir("test"):
+        if entry.is_dir():
+            print(f"=== {entry.name} ===")
+
+            for file in os.scandir(entry):
+                path = Path(file)
+                print(f"    {path.stem}")
+                test = Test(path)
+                test.run()
+
+
+def test_the_test():
+    files = [
+        "tests/block.lox",
+        # "test/assignment/global.lox",
+        # "test/assignment/grouping.lox",
+        # "test/assignment/undefined.lox",
+    ]
+    for file in files:
+        path = Path(file)
+        print(f"=== {path.stem} ===")
+        run_test(path)
+
+
+if __name__ == "__main__":
+    test_the_test()
