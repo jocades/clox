@@ -295,6 +295,21 @@ static void defineVariable(uint8_t global) {
   emitBytes(OP_DEFINE_GLOBAL, global);
 }
 
+static uint8_t argumentList() {
+  uint8_t arg_count = 0;
+  if (!check(TOKEN_RIGHT_PAREN)) {
+    do {
+      expression();
+      arg_count++;
+      if (arg_count == UINT8_MAX) {
+        error("Cannot have more than 255 arguments.");
+      }
+    } while (match(TOKEN_COMMA));
+  }
+  consume(TOKEN_RIGHT_PAREN, "Expected ')' after arguments.");
+  return arg_count;
+}
+
 static void and_(bool can_assing) {
   int end_jump = emitJump(OP_JUMP_IF_FALSE);
 
@@ -322,6 +337,11 @@ static void binary(bool can_assign) {
     case TOKEN_SLASH: emitByte(OP_DIVIDE); break;
     default: return;  // Unreachable.
   }
+}
+
+static void call(bool can_assign) {
+  uint8_t arg_count = argumentList();
+  emitBytes(OP_CALL, arg_count);
 }
 
 static void literal(bool can_assign) {
@@ -397,7 +417,7 @@ static void unary(bool can_assign) {
 }
 
 ParseRule rules[] = {
-  [TOKEN_LEFT_PAREN] = {grouping, NULL, PREC_NONE},
+  [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
   [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
   [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
   [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
@@ -678,5 +698,5 @@ ObjFunction* compile(const char* source) {
   }
 
   ObjFunction* function = endCompiler();
-  return !parser.had_error ? NULL : function;
+  return parser.had_error ? NULL : function;
 }
