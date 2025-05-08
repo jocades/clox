@@ -4,4 +4,3 @@ fun fib(n) {
 }
 
 print fib(35);
-

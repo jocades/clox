@@ -6,6 +6,7 @@ import subprocess
 from pathlib import Path
 from typing import Literal
 from dataclasses import dataclass
+from argparse import ArgumentParser
 
 import term
 
@@ -211,14 +212,27 @@ def run_test(path: Path):
             print(f"     {term.yellow(failure)}")
 
 
+def run_directory(dir: str):
+    for file in os.scandir(dir):
+        path = Path(file)
+        run_test(path)
+
+
 def main():
-    for entry in os.scandir("test"):
-        if entry.is_dir():
-            print(f"=== {entry.name} ===")
-            for file in os.scandir(entry):
-                path = Path(file)
-                run_test(path)
-            print()
+    parser = ArgumentParser("Test Runner")
+    parser.add_argument("directory", nargs="?")
+    args = parser.parse_args()
+
+    test_dir = Path("test")
+
+    if args.directory is not None:
+        run_directory(test_dir / args.directory)
+    else:
+        for entry in os.scandir(test_dir):
+            if entry.is_dir():
+                print(f"=== {entry.name} ===")
+                run_directory(entry.path)
+                print()
 
 
 def test_the_test():
