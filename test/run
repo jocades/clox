@@ -172,7 +172,7 @@ class Test:
             expected = self.expected_output[index]
             if expected.output != line:
                 self.fail(
-                    f"Expected output '{expected.output} on line {expected.line} and got '{line}'."
+                    f"Expected output '{expected.output}' on line {expected.line} and got '{line}'."
                 )
 
         while index < len(self.expected_output) - 1:

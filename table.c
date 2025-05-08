@@ -19,7 +19,6 @@ void freeTable(Table* table) {
   FREE_ARRAY(Entry, table->entries, table->capacity);
 }
 
-// entries = array of entries = Entry entries[] = Entry* entries.
 static Entry* findEntry(Entry* entries, int capacity, ObjString* key) {
   uint32_t index = key->hash % capacity;
   Entry* tombstone = NULL;
@@ -50,7 +49,7 @@ static void adjustCapacity(Table* table, int capacity) {
     entries[i].value = NIL_VAL;
   }
 
-  // readjust existing entries since capacity has changed
+  // Readjust existing entries since capacity has changed
   table->count = 0;
   for (int i = 0; i < table->capacity; i++) {
     Entry* entry = &table->entries[i];
