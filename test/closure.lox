@@ -1,3 +1,15 @@
+var x = "global";
+
+fun outer() {
+  var x = "outher";
+  fun inner() {
+    print x;
+  }
+  inner();
+}
+
+outer();
+
 fun makeCounter() {
   var count = 0;
   fun counter() {
@@ -12,15 +24,3 @@ print counter;
 
 print counter();
 print counter();
-
-//var x = "global";
-//
-//fun outer() {
-//  var x = "outher";
-//  fun inner() {
-//    print x;
-//  }
-//  inner();
-//}
-//
-//outer();

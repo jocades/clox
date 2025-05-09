@@ -1,0 +1,15 @@
+{
+  fun add(a, b) {
+    return a + b;
+  }
+
+  print add(2, 2);
+
+  fun fib(n) {
+    if (n < 2) return n;
+    return fib(n - 1) + fib(n -2);
+  }
+
+  var result = fib(8);
+  print result;
+}

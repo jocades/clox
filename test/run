@@ -156,7 +156,7 @@ class Test:
             error_lines.append("(truncated...)")
 
         self.fail(
-            f"Expected exit code ${self.expected_exit_code} and got {exit_code}. Stderr:",
+            f"Expected exit code {self.expected_exit_code} and got {exit_code}. Stderr:",
             error_lines,
         )
 
@@ -220,13 +220,16 @@ def run_directory(dir: str):
 
 def main():
     parser = ArgumentParser("Test Runner")
-    parser.add_argument("directory", nargs="?")
+    parser.add_argument("-d", "--directory", type=Path, nargs="?")
+    parser.add_argument("-f", "--file", type=Path, nargs="?")
     args = parser.parse_args()
 
     test_dir = Path("test")
 
     if args.directory is not None:
         run_directory(test_dir / args.directory)
+    elif args.file is not None:
+        run_test(args.file)
     else:
         for entry in os.scandir(test_dir):
             if entry.is_dir():
