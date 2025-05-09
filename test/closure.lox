@@ -1,0 +1,26 @@
+fun makeCounter() {
+  var count = 0;
+  fun counter() {
+    count = count + 1;
+    return count;
+  }
+  return counter;
+}
+
+var counter = makeCounter();
+print counter;
+
+print counter();
+print counter();
+
+//var x = "global";
+//
+//fun outer() {
+//  var x = "outher";
+//  fun inner() {
+//    print x;
+//  }
+//  inner();
+//}
+//
+//outer();
