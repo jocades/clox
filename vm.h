@@ -20,7 +20,8 @@ typedef struct {
   Value* stack_top;        // pointer to the top of the array (stack)
   Table globals;           // table of global variables
   Table strings;           // table of unique strings
-  Obj* objects;            // linked list of objects for the garbage collector
+  ObjUpvalue* open_upvalues;
+  Obj* objects;  // linked list of objects for the garbage collector
 } VM;
 
 typedef enum {
