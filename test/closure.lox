@@ -1,7 +1,7 @@
 var x = "global";
 
 fun outer() {
-  var x = "outher";
+  var x = "outer";
   fun inner() {
     print x;
   }
@@ -10,17 +10,17 @@ fun outer() {
 
 outer();
 
-fun makeCounter() {
-  var count = 0;
-  fun counter() {
-    count = count + 1;
-    return count;
-  }
-  return counter;
-}
-
-var counter = makeCounter();
-print counter;
-
-print counter();
-print counter();
+//fun makeCounter() {
+//  var count = 0;
+//  fun counter() {
+//    count = count + 1;
+//    return count;
+//  }
+//  return counter;
+//}
+//
+//var counter = makeCounter();
+//print counter;
+//
+//print counter();
+//print counter();
