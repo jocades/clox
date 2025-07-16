@@ -1,0 +1,8 @@
+fun outer() {
+  var x = 1;
+  fun inner() { print x; }
+  return inner;
+}
+
+var in = outer();
+in();

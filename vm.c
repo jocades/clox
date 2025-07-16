@@ -54,6 +54,13 @@ static void defineNative(const char* name, NativeFn function) {
 void initVM() {
   resetStack();
   vm.objects = NULL;
+  vm.bytes_allocated = 0;
+  vm.next_gc = 1024 * 1024;
+
+  vm.gray_count = 0;
+  vm.gray_capacity = 0;
+  vm.gray_stack = NULL;
+
   initTable(&vm.globals);
   initTable(&vm.strings);
 
@@ -117,19 +124,30 @@ static bool callValue(Value callee, int arg_count) {
 }
 
 static ObjUpvalue* captureUpvalue(Value* local) {
+  /* printf("capture_upvalue local = %p ", local);
+  printValue(*local);
+  puts(""); */
   ObjUpvalue* prev_upvalue = NULL;
   ObjUpvalue* upvalue = vm.open_upvalues;
   while (upvalue != NULL && upvalue->location > local) {
+    /* printf("vm.open_upvalues = %p ", vm.open_upvalues);
+    printValue(*vm.open_upvalues->location);
+    puts(""); */
     prev_upvalue = upvalue;
     upvalue = upvalue->next;
   }
 
   if (upvalue != NULL && upvalue->location == local) {
+    /* printf("found existing upvalue\n"); */
     return upvalue;
   }
 
   ObjUpvalue* created_upvalue = newUpvalue(local);
   created_upvalue->next = upvalue;
+
+  /* printf("create_upvalue = %p ", created_upvalue->location);
+  printValue(*created_upvalue->location);
+  puts(""); */
 
   if (prev_upvalue == NULL) {
     vm.open_upvalues = created_upvalue;
@@ -141,7 +159,13 @@ static ObjUpvalue* captureUpvalue(Value* local) {
 }
 
 static void closeUpvalues(Value* last) {
+  /* printf("close upvalues; last = %p ", last);
+  printValue(*last);
+  puts(""); */
   while (vm.open_upvalues != NULL && vm.open_upvalues->location >= last) {
+    /* printf("vm.open_upvalues->location = %p ", vm.open_upvalues->location);
+    printValue(*vm.open_upvalues->location);
+    puts(""); */
     ObjUpvalue* upvalue = vm.open_upvalues;
     upvalue->closed = *upvalue->location;
     upvalue->location = &upvalue->closed;
@@ -154,8 +178,8 @@ static bool isFalsey(Value value) {
 }
 
 static void concatenate() {
-  ObjString* b = AS_STRING(pop());
-  ObjString* a = AS_STRING(pop());
+  ObjString* b = AS_STRING(peek(0));
+  ObjString* a = AS_STRING(peek(1));
 
   int length = a->length + b->length;
   char* chars = ALLOCATE(char, length + 1);
@@ -164,6 +188,8 @@ static void concatenate() {
   chars[length] = '\0';
 
   ObjString* result = takeString(chars, length);
+  pop();
+  pop();
   push(OBJ_VAL(result));
 }
 
