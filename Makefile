@@ -20,7 +20,9 @@ $(BINARY): $(OBJECTS)
 
 $(BUILD_DIR)/%.o: %.c
 	mkdir -p $(dir $@)
-	$(CC) -c $(CFLAGS) -o $@ $<
+	$(CC) -c $(CFLAGS) -MMD -MP -o $@ $<
+
+-include $(OBJECTS:.o=.d)
 
 run: $(BINARY)
 	./$(NAME)
