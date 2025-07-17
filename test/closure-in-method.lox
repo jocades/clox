@@ -1,0 +1,8 @@
+class A {
+  f() {
+    fun g() { print this; }
+    return g;
+  }
+}
+
+A().f()();

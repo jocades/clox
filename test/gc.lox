@@ -1,0 +1,23 @@
+var T = 30;
+var start = clock();
+
+var collect = "collect me please";
+
+fun test() {
+  var loopCount = 0;
+  while (true) {
+    loopCount = loopCount + 1;
+    var other = "wtf";
+
+    var elapsed = clock() - start;
+    if (elapsed >= T) {
+      print loopCount;
+      print elapsed;
+      return;
+    }
+
+    collect =  "whiten";
+  }
+}
+
+test();

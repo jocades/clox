@@ -1,0 +1,10 @@
+fun main() {
+  fun rec(n) {
+    print n;
+    if (n == 0) return;
+    rec(n - 1);
+  }
+  rec(1);
+}
+
+main();

@@ -55,7 +55,8 @@ typedef struct {
 
 typedef enum {
   TYPE_FUNCTION,
-  TYPE_SCRIPT
+  TYPE_METHOD,
+  TYPE_SCRIPT,
 } FunctionType;
 
 typedef struct Compiler {
@@ -69,8 +70,13 @@ typedef struct Compiler {
   int scope_depth;
 } Compiler;
 
+typedef struct ClassCompiler {
+  struct ClassCompiler* enclosing;
+} ClassCompiler;
+
 Parser parser;
 Compiler* current = NULL;
+ClassCompiler* current_class = NULL;
 
 static Chunk* currentChunk() {
   return &current->function->chunk;
@@ -203,8 +209,13 @@ static void initCompiler(Compiler* compiler, FunctionType type) {
   Local* local = &current->locals[current->local_count++];
   local->depth = 0;
   local->is_captured = false;
-  local->name.start = "";
-  local->name.length = 0;
+  if (type != TYPE_FUNCTION) {
+    local->name.start = "this";
+    local->name.length = 4;
+  } else {
+    local->name.start = "";
+    local->name.length = 0;
+  }
 }
 
 static ObjFunction* endCompiler() {
@@ -388,7 +399,7 @@ static void binary(bool can_assign) {
     case TOKEN_MINUS: emitByte(OP_SUBTRACT); break;
     case TOKEN_STAR: emitByte(OP_MULTIPLY); break;
     case TOKEN_SLASH: emitByte(OP_DIVIDE); break;
-    default: return;  // Unreachable.
+    default: UNREACHABLE();
   }
 }
 
@@ -414,7 +425,7 @@ static void literal(bool can_assign) {
     case TOKEN_FALSE: emitByte(OP_FALSE); break;
     case TOKEN_NIL: emitByte(OP_NIL); break;
     case TOKEN_TRUE: emitByte(OP_TRUE); break;
-    default: return;  // Unreachable
+    default: UNREACHABLE();
   }
 }
 
@@ -470,6 +481,15 @@ static void variable(bool can_assign) {
   namedVariable(parser.previous, can_assign);
 }
 
+static void this_(bool can_assign) {
+  if (current_class == NULL) {
+    error("Cannot use 'this' outside of a class.");
+    return;
+  }
+
+  variable(false);
+}
+
 static void unary(bool can_assign) {
   TokenType operator_type = parser.previous.type;
 
@@ -480,7 +500,7 @@ static void unary(bool can_assign) {
   switch (operator_type) {
     case TOKEN_BANG: emitByte(OP_NOT); break;
     case TOKEN_MINUS: emitByte(OP_NEGATE); break;
-    default: return;  // Unreachable.
+    default: UNREACHABLE();
   }
 }
 
@@ -519,7 +539,7 @@ ParseRule rules[] = {
   [TOKEN_PRINT] = {NULL, NULL, PREC_NONE},
   [TOKEN_RETURN] = {NULL, NULL, PREC_NONE},
   [TOKEN_SUPER] = {NULL, NULL, PREC_NONE},
-  [TOKEN_THIS] = {NULL, NULL, PREC_NONE},
+  [TOKEN_THIS] = {this_, NULL, PREC_NONE},
   [TOKEN_TRUE] = {literal, NULL, PREC_NONE},
   [TOKEN_VAR] = {NULL, NULL, PREC_NONE},
   [TOKEN_WHILE] = {NULL, NULL, PREC_NONE},
@@ -594,16 +614,38 @@ static void function(FunctionType type) {
   }
 }
 
+static void method() {
+  consume(TOKEN_IDENTIFIER, "Expected method name.");
+  uint8_t constant = identifierConstant(&parser.previous);
+
+  FunctionType type = TYPE_METHOD;
+  function(type);
+
+  emitBytes(OP_METHOD, constant);
+}
+
 static void classDeclaration() {
   consume(TOKEN_IDENTIFIER, "Expected class name.");
+  Token class_name = parser.previous;
   uint8_t name_constant = identifierConstant(&parser.previous);
   declareVariable();
 
   emitBytes(OP_CLASS, name_constant);
   defineVariable(name_constant);
 
+  ClassCompiler class_compiler;
+  class_compiler.enclosing = current_class;
+  current_class = &class_compiler;
+
+  namedVariable(class_name, false);
   consume(TOKEN_LEFT_BRACE, "Expect '{' before class body.");
+  while (!check(TOKEN_RIGHT_BRACE) && !check(TOKEN_EOF)) {
+    method();
+  }
   consume(TOKEN_RIGHT_BRACE, "Expect '}' after class body.");
+  emitByte(OP_POP);
+
+  current_class = current_class->enclosing;
 }
 
 static void funDeclaration() {

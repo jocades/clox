@@ -5,12 +5,13 @@
 #include <string.h>
 #include <time.h>
 
-#include "common.h"
 #include "compiler.h"
-#include "debug.h"
 #include "memory.h"
 #include "object.h"
 #include "table.h"
+#ifdef DEBUG_TRACE_EXECUTION
+#include "debug.h"
+#endif
 
 VM vm;
 
@@ -108,12 +109,17 @@ static bool call(ObjClosure* closure, int arg_count) {
 static bool callValue(Value callee, int arg_count) {
   if (IS_OBJ(callee)) {
     switch (OBJ_TYPE(callee)) {
-      case OBJ_CLOSURE: return call(AS_CLOSURE(callee), arg_count);
+      case OBJ_BOUND_METHOD: {
+        ObjBoundMethod* bound = AS_BOUND_METHOD(callee);
+        vm.stack_top[-arg_count - 1] = bound->receiver;
+        return call(bound->method, arg_count);
+      }
       case OBJ_CLASS: {
         ObjClass* klass = AS_CLASS(callee);
         vm.stack_top[-arg_count - 1] = OBJ_VAL(newInstance(klass));
         return true;
       }
+      case OBJ_CLOSURE: return call(AS_CLOSURE(callee), arg_count);
       case OBJ_NATIVE: {
         NativeFn native = AS_NATIVE(callee);
         Value result = native(arg_count, vm.stack_top - arg_count);
@@ -128,31 +134,33 @@ static bool callValue(Value callee, int arg_count) {
   return false;
 }
 
+bool bindMethod(ObjClass* klass, ObjString* name) {
+  Value method;
+  if (!tableGet(&klass->methods, name, &method)) {
+    runtimeError("Undefined poperty '%s'.", name->chars);
+    return false;
+  }
+
+  ObjBoundMethod* bound = newBoundMethod(peek(0), AS_CLOSURE(method));
+  pop();
+  push(OBJ_VAL(bound));
+  return true;
+}
+
 static ObjUpvalue* captureUpvalue(Value* local) {
-  /* printf("capture_upvalue local = %p ", local);
-  printValue(*local);
-  puts(""); */
   ObjUpvalue* prev_upvalue = NULL;
   ObjUpvalue* upvalue = vm.open_upvalues;
   while (upvalue != NULL && upvalue->location > local) {
-    /* printf("vm.open_upvalues = %p ", vm.open_upvalues);
-    printValue(*vm.open_upvalues->location);
-    puts(""); */
     prev_upvalue = upvalue;
     upvalue = upvalue->next;
   }
 
   if (upvalue != NULL && upvalue->location == local) {
-    /* printf("found existing upvalue\n"); */
     return upvalue;
   }
 
   ObjUpvalue* created_upvalue = newUpvalue(local);
   created_upvalue->next = upvalue;
-
-  /* printf("create_upvalue = %p ", created_upvalue->location);
-  printValue(*created_upvalue->location);
-  puts(""); */
 
   if (prev_upvalue == NULL) {
     vm.open_upvalues = created_upvalue;
@@ -164,18 +172,19 @@ static ObjUpvalue* captureUpvalue(Value* local) {
 }
 
 static void closeUpvalues(Value* last) {
-  /* printf("close upvalues; last = %p ", last);
-  printValue(*last);
-  puts(""); */
   while (vm.open_upvalues != NULL && vm.open_upvalues->location >= last) {
-    /* printf("vm.open_upvalues->location = %p ", vm.open_upvalues->location);
-    printValue(*vm.open_upvalues->location);
-    puts(""); */
     ObjUpvalue* upvalue = vm.open_upvalues;
     upvalue->closed = *upvalue->location;
     upvalue->location = &upvalue->closed;
     vm.open_upvalues = upvalue->next;
   }
+}
+
+static void defineMethod(ObjString* name) {
+  Value method = peek(0);
+  ObjClass* klass = AS_CLASS(peek(1));
+  tableSet(&klass->methods, name, method);
+  pop();
 }
 
 static bool isFalsey(Value value) {
@@ -304,8 +313,10 @@ static InterpretResult run() {
           break;
         }
 
-        runtimeError("Undefined property '%s'.", name->chars);
-        return INTERPRET_RUNTIME_ERROR;
+        if (!bindMethod(instance->klass, name)) {
+          return INTERPRET_RUNTIME_ERROR;
+        }
+        break;
       }
       case OP_SET_PROPERTY: {
         if (!IS_INSTANCE(peek(1))) {
@@ -419,9 +430,12 @@ static InterpretResult run() {
         push(OBJ_VAL(newClass(READ_STRING())));
         break;
       }
+      case OP_METHOD: {
+        defineMethod(READ_STRING());
+        break;
+      }
     }
   }
-
 #undef READ_BYTE
 #undef READ_SHORT
 #undef READ_CONSTANT
