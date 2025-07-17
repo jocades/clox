@@ -5,4 +5,4 @@ class Scone {
 }
 
 var scone = Scone();
-scone.topping("berries", "cream");
+scone.topping("berries", "cream"); // expect: scone with berries and cream

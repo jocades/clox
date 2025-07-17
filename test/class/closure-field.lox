@@ -9,4 +9,4 @@ class Oops {
 }
 
 var oops = Oops();
-oops.field();
+oops.field(); // expect: not a method

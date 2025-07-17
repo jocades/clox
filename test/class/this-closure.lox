@@ -1,0 +1,14 @@
+class A {
+  init(name) {
+    this.name = name;
+
+    fun f() {
+      print this.name;
+    }
+
+    this.g = f;
+  }
+}
+
+var a = A("value");
+a.g(); // expect: value

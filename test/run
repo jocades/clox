@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 
 import term
 
+
 expected_output_pattern = re.compile(r"// expect: ?(.*)")
 expected_error_pattern = re.compile(r"// (Error.*)")
 error_line_pattern = re.compile(r"// \[((java|c) )?line (\d+)\] (Error.*)")
@@ -224,14 +225,12 @@ def main():
     parser.add_argument("-f", "--file", type=Path, nargs="?")
     args = parser.parse_args()
 
-    test_dir = Path("test")
-
     if args.directory is not None:
-        run_directory(test_dir / args.directory)
+        run_directory(args.directory)
     elif args.file is not None:
         run_test(args.file)
     else:
-        for entry in os.scandir(test_dir):
+        for entry in os.scandir("test"):
             if entry.is_dir():
                 print(f"=== {entry.name} ===")
                 run_directory(entry.path)

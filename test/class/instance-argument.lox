@@ -1,0 +1,20 @@
+class A {
+  init(name) {
+    this.name = name;
+  }
+
+  f() {
+    print this.name;
+  }
+}
+
+fun g(a) {
+  a.f();
+}
+
+var a = A("value");
+a.f(); // expect: value
+a.name = "other";
+g(a); // expect: other
+
+
