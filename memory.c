@@ -185,6 +185,7 @@ static void markRoots() {
 
   markTable(&vm.globals);
   markCompilerRoots();
+  markObject((Obj*)vm.init_string);
 }
 
 static void traceReferences() {

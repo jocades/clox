@@ -1,0 +1,19 @@
+class A {
+  init() {
+    this.v = "v";
+  }
+
+  set(v) {
+    this.v = v;
+    print "set " + this.v;
+  }
+}
+
+var a = A();
+var set = a.set;
+
+set("x"); // expect: set x
+print a.v; // expect: x
+
+a.set("y"); // expect: set y
+print a.v; // expect: y
