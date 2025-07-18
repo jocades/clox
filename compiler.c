@@ -9,7 +9,7 @@
 #include "object.h"
 #include "scanner.h"
 
-#ifdef DEBUG_PRINT_CODE
+#if DEBUG_PRINT_CODE
 #include "debug.h"
 #endif
 
@@ -228,7 +228,7 @@ static ObjFunction* endCompiler() {
   emitReturn();
   ObjFunction* function = current->function;
 
-#ifdef DEBUG_PRINT_CODE
+#if DEBUG_PRINT_CODE
   if (!parser.had_error) {
     disassembleChunk(currentChunk(), function->name != NULL ? function->name->chars : "<script>");
     puts("");

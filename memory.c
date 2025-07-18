@@ -6,7 +6,7 @@
 #include "compiler.h"
 #include "vm.h"
 
-#ifdef DEBUG_LOG_GC
+#if DEBUG_LOG_GC
 #include "debug.h"
 #endif
 
@@ -21,7 +21,7 @@
 void* reallocate(void* pointer, size_t old_size, size_t new_size) {
   vm.bytes_allocated += new_size - old_size;
   if (new_size > old_size) {
-#ifdef DEBUG_STRESS_GC
+#if DEBUG_STRESS_GC
     collectGarbage();
 #endif
   }
@@ -44,7 +44,7 @@ void markObject(Obj* object) {
   if (object == NULL) return;
   if (object->is_marked) return;
 
-#ifdef DEBUG_LOG_GC
+#if DEBUG_LOG_GC
   printf("%p mark ", (void*)object);
   printValue(OBJ_VAL(object));
   printf("\n");
@@ -74,7 +74,7 @@ void markArray(ValueArray* array) {
 void blackenObject(Obj* object) {
   // A black object is any object whose 'is_marked' field is set and that is no
   // longer in the gray stack.
-#ifdef DEBUG_LOG_GC
+#if DEBUG_LOG_GC
   printf("%p blacken ", (void*)object);
   printValue(OBJ_VAL(object));
   printf("\n");
@@ -123,7 +123,7 @@ void blackenObject(Obj* object) {
 }
 
 static void freeObject(Obj* object) {
-#ifdef DEBUG_LOG_GC
+#if DEBUG_LOG_GC
   printf("%p free type %d\n", (void*)object, object->type);
 #endif
 
@@ -218,7 +218,7 @@ static void sweep() {
 }
 
 void collectGarbage() {
-#ifdef DEBUG_LOG_GC
+#if DEBUG_LOG_GC
   printf("-- gc begin\n");
   size_t before = vm.bytes_allocated;
 #endif
@@ -230,7 +230,7 @@ void collectGarbage() {
 
   vm.next_gc = vm.bytes_allocated * GC_HEAP_GROW_FACTOR;
 
-#ifdef DEBUG_LOG_GC
+#if DEBUG_LOG_GC
   printf("-- gc end\n");
   printf(
     "   collected %zu bytes (from %zu to %zu) next at %zu\n",

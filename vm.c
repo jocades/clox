@@ -9,7 +9,7 @@
 #include "memory.h"
 #include "object.h"
 #include "table.h"
-#ifdef DEBUG_TRACE_EXECUTION
+#if DEBUG_TRACE_EXECUTION
 #include "debug.h"
 #endif
 
@@ -269,7 +269,7 @@ static InterpretResult run() {
   } while (false)
 
   for (;;) {
-#ifdef DEBUG_TRACE_EXECUTION
+#if DEBUG_TRACE_EXECUTION
     printf("          ");
     for (Value* slot = vm.stack; slot < vm.stack_top; slot++) {
       printf("[ ");

@@ -214,8 +214,11 @@ def run_test(path: Path):
 
 
 def run_directory(dir: str):
-    for file in os.scandir(dir):
-        path = Path(file)
+    for entry in os.scandir(dir):
+        # if entry.is_dir():
+        #     run_directory(str(entry))
+        # else:
+        path = Path(entry)
         run_test(path)
 
 
@@ -230,7 +233,7 @@ def main():
     elif args.file is not None:
         run_test(args.file)
     else:
-        for entry in os.scandir("test"):
+        for entry in os.scandir("test/book"):
             if entry.is_dir():
                 print(f"=== {entry.name} ===")
                 run_directory(entry.path)
