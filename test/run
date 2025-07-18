@@ -8,8 +8,6 @@ from typing import Literal
 from dataclasses import dataclass
 from argparse import ArgumentParser
 
-import term
-
 
 expected_output_pattern = re.compile(r"// expect: ?(.*)")
 expected_error_pattern = re.compile(r"// (Error.*)")
@@ -188,6 +186,31 @@ class Test:
             self.failures += lines
 
 
+class Term:
+    none = "\u001b[0m"
+    reset = "\u001b[39m"
+
+    def gray(self, msg):
+        return f"\u001b[1;30m{msg}{self.none}"
+
+    def cyan(self, msg):
+        return f"\u001b[36m{msg}{self.none}"
+
+    def green(self, msg):
+        return f"\u001b[32m{msg}{self.reset}"
+
+    def red(self, msg):
+        return f"\u001b[31m{msg}{self.reset}"
+
+    def yellow(self, msg):
+        return f"\u001b[33m{msg}{self.reset}"
+
+    def pink(self, msg):
+        return f"\u001b[91m{msg}{self.reset}"
+
+
+term = Term()
+
 passed = 0
 failed = 0
 
@@ -218,8 +241,7 @@ def run_directory(dir: str):
         # if entry.is_dir():
         #     run_directory(str(entry))
         # else:
-        path = Path(entry)
-        run_test(path)
+        run_test(Path(entry))
 
 
 def main():

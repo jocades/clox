@@ -52,13 +52,12 @@ static bool match(char expected) {
 }
 
 static Token makeToken(TokenType type) {
-  Token token = {
+  return (Token){
     .type = type,
     .start = scanner.start,
     .length = (int)(scanner.current - scanner.start),
-    .line = scanner.line
+    .line = scanner.line,
   };
-  return token;
 }
 
 static Token errorToken(const char* msg) {
@@ -185,6 +184,8 @@ Token scanToken() {
     case ')': return makeToken(TOKEN_RIGHT_PAREN);
     case '{': return makeToken(TOKEN_LEFT_BRACE);
     case '}': return makeToken(TOKEN_RIGHT_BRACE);
+    case '[': return makeToken(TOKEN_LEFT_BRACKET);
+    case ']': return makeToken(TOKEN_RIGHT_BRACKET);
     case ';': return makeToken(TOKEN_SEMICOLON);
     case ',': return makeToken(TOKEN_COMMA);
     case '.': return makeToken(TOKEN_DOT);

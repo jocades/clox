@@ -1,8 +1,8 @@
 CC := clang
-CFLAGS := -std=c99 -Wall -Wextra -Werror -Wno-unused-parameter
+CFLAGS := -std=c99 -Wall -Wextra -Wno-unused-parameter
 
 ifeq ($(MODE),debug)
-	CFLAGS += -O0 -g -DDEBUG_PRINT_CODE -DDEBUG_TRACE_EXECUTION
+	CFLAGS += -O0 -g # -DDEBUG_PRINT_CODE -DDEBUG_TRACE_EXECUTION
 	BUILD_DIR := build/debug
 else
 	CFLAGS += -O2 -flto

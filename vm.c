@@ -180,7 +180,7 @@ static bool invoke(ObjString* name, int arg_count) {
 bool bindMethod(ObjClass* klass, ObjString* name) {
   Value method;
   if (!tableGet(&klass->methods, name, &method)) {
-    runtimeError("Undefined poperty '%s'.", name->chars);
+    runtimeError("Undefined property '%s'.", name->chars);
     return false;
   }
 
@@ -352,7 +352,6 @@ static InterpretResult run() {
         if (tableGet(&instance->fields, name, &value)) {
           pop();  // Instance.
           push(value);
-          /* vm.stack_top[-1] = value; */
           break;
         }
 
@@ -515,6 +514,20 @@ static InterpretResult run() {
       }
       case OP_METHOD: {
         defineMethod(READ_STRING());
+        break;
+      }
+      case OP_ARRAY: {
+        int element_count = READ_BYTE();
+        ObjArray* array = newArrayWithCapacity(element_count);
+        push(OBJ_VAL(array));  // GC protection.
+
+        Value* elements = array->elements.values;
+        for (int i = element_count; i > 0; i--) {
+          elements[array->elements.count++] = peek(i);
+        }
+        pop();
+        vm.stack_top -= element_count;
+        push(OBJ_VAL(array));
         break;
       }
     }

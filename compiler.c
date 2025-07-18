@@ -380,7 +380,7 @@ static uint8_t argumentList() {
   return arg_count;
 }
 
-static void and_(bool can_assing) {
+static void and_(bool can_assign) {
   int end_jump = emitJump(OP_JUMP_IF_FALSE);
 
   emitByte(OP_POP);
@@ -544,11 +544,26 @@ static void unary(bool can_assign) {
   }
 }
 
+static void array(bool can_assign) {
+  int element_count = 0;
+  if (!check(TOKEN_RIGHT_BRACKET)) do {
+      expression();
+      element_count++;
+      if (element_count == UINT8_MAX) {
+        error("Cannot have more than 255 array elements.");
+      }
+    } while (match(TOKEN_COMMA));
+  consume(TOKEN_RIGHT_BRACKET, "Expected ']' after array elements.");
+  emitBytes(OP_ARRAY, element_count);
+}
+
 ParseRule rules[] = {
   [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
   [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
   [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
   [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
+  [TOKEN_LEFT_BRACKET] = {array, NULL, PREC_CALL},
+  [TOKEN_RIGHT_BRACKET] = {NULL, NULL, PREC_NONE},
   [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
   [TOKEN_DOT] = {NULL, dot, PREC_CALL},
   [TOKEN_MINUS] = {unary, binary, PREC_TERM},

@@ -25,6 +25,24 @@ static Obj* allocateObject(size_t size, ObjType type) {
   return object;
 }
 
+ObjArray* newArray() {
+  ObjArray* array = ALLOCATE_OBJ(ObjArray, OBJ_ARRAY);
+  initValueArray(&array->elements);
+  return array;
+}
+
+ObjArray* newArrayWithCapacity(int capacity) {
+  ObjArray* array = ALLOCATE_OBJ(ObjArray, OBJ_ARRAY);
+  initValueArray(&array->elements);
+
+  if (capacity > 0) {
+    array->elements.capacity = capacity;
+    array->elements.values = GROW_ARRAY(Value, NULL, 0, capacity);
+  }
+
+  return array;
+}
+
 ObjBoundMethod* newBoundMethod(Value receiver, ObjClosure* method) {
   ObjBoundMethod* bound = ALLOCATE_OBJ(ObjBoundMethod, OBJ_BOUND_METHOD);
   bound->receiver = receiver;
@@ -138,8 +156,18 @@ static void printFunction(ObjFunction* function) {
   printf("<fn %s>", function->name->chars);
 }
 
+static void printArray(ObjArray* array) {
+  printf("[");
+  for (int i = 0; i < array->elements.count; i++) {
+    printValue(array->elements.values[i]);
+    if (i < array->elements.count - 1) printf(", ");
+  }
+  printf("]");
+}
+
 void printObject(Value value) {
   switch (OBJ_TYPE(value)) {
+    case OBJ_ARRAY: printArray(AS_ARRAY(value)); break;
     case OBJ_BOUND_METHOD: printFunction(AS_BOUND_METHOD(value)->method->function); break;
     case OBJ_CLASS: printf("%s", AS_CLASS(value)->name->chars); break;
     case OBJ_CLOSURE: printFunction(AS_CLOSURE(value)->function); break;
