@@ -546,13 +546,17 @@ static void unary(bool can_assign) {
 
 static void array(bool can_assign) {
   int element_count = 0;
-  if (!check(TOKEN_RIGHT_BRACKET)) do {
-      expression();
-      element_count++;
-      if (element_count == UINT8_MAX) {
-        error("Cannot have more than 255 array elements.");
-      }
-    } while (match(TOKEN_COMMA));
+  do {
+    // Check for trailing comma before parsing expression.
+    if (check(TOKEN_RIGHT_BRACKET)) break;
+
+    expression();
+    element_count++;
+    if (element_count == UINT8_MAX) {
+      error("Cannot have more than 255 array elements.");
+    }
+  } while (match(TOKEN_COMMA));
+
   consume(TOKEN_RIGHT_BRACKET, "Expected ']' after array elements.");
   emitBytes(OP_ARRAY, element_count);
 }

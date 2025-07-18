@@ -10,9 +10,11 @@ while (clock() - start < 10) {
   batch = batch + 1;
 }
 
-// newArray + writeValueArray = 1.13689e+07
-// newArrayWithCapacity + inplace = 1.54185e+07
-
-
 print batch;
 print clock() - start;
+
+// newArray + writeValueArray = 1.13689e+07
+// newArrayWithCapacity + inPlace = 1.54185e+07
+
+// ((1.54185e7 - 1.13689e7) / 1.13689e7) * 100
+// IMPROVEMENT ~= 35.62%
