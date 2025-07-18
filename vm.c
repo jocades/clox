@@ -253,6 +253,7 @@ static void concatenate() {
 static InterpretResult run() {
   CallFrame* frame = &vm.frames[vm.frame_count - 1];
 
+#define LOAD_FRAME() (frame = &vm.frames[vm.frame_count - 1])
 #define READ_BYTE() (*frame->ip++)
 #define READ_SHORT() (frame->ip += 2, (uint16_t)((frame->ip[-2] << 8) | frame->ip[-1]))
 #define READ_CONSTANT() (frame->closure->function->chunk.constants.values[READ_BYTE()])
@@ -260,13 +261,17 @@ static InterpretResult run() {
 #define BINARY_OP(valueType, op)                      \
   do {                                                \
     if (!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
-      runtimeError("Operands must be numbers.");      \
-      return INTERPRET_RUNTIME_ERROR;                 \
+      RUNTIME_ERROR("Operands must be numbers.");     \
     }                                                 \
     double b = AS_NUMBER(pop());                      \
     double a = AS_NUMBER(pop());                      \
     push(valueType(a op b));                          \
-  } while (false)
+  } while (0)
+#define RUNTIME_ERROR(...)          \
+  do {                              \
+    runtimeError(__VA_ARGS__);      \
+    return INTERPRET_RUNTIME_ERROR; \
+  } while (0)
 
   for (;;) {
 #if DEBUG_TRACE_EXECUTION
@@ -308,8 +313,7 @@ static InterpretResult run() {
         ObjString* name = READ_STRING();
         Value value;
         if (!tableGet(&vm.globals, name, &value)) {
-          runtimeError("Undefined variable '%s'.", name->chars);
-          return INTERPRET_RUNTIME_ERROR;
+          RUNTIME_ERROR("Undefined variable '%s'.", name->chars);
         }
         push(value);
         break;
@@ -324,8 +328,7 @@ static InterpretResult run() {
         ObjString* name = READ_STRING();
         if (tableSet(&vm.globals, name, peek(0))) {
           tableDelete(&vm.globals, name);
-          runtimeError("Undefined variable '%s'.", name->chars);
-          return INTERPRET_RUNTIME_ERROR;
+          RUNTIME_ERROR("Undefined variable '%s'.", name->chars);
         }
         break;
       }
@@ -341,8 +344,7 @@ static InterpretResult run() {
       }
       case OP_GET_PROPERTY: {
         if (!IS_INSTANCE(peek(0))) {
-          runtimeError("Only instances have properties.");
-          return INTERPRET_RUNTIME_ERROR;
+          RUNTIME_ERROR("Only instances have properties.");
         }
 
         ObjInstance* instance = AS_INSTANCE(peek(0));
@@ -362,8 +364,7 @@ static InterpretResult run() {
       }
       case OP_SET_PROPERTY: {
         if (!IS_INSTANCE(peek(1))) {
-          runtimeError("Only instances have fields.");
-          return INTERPRET_RUNTIME_ERROR;
+          RUNTIME_ERROR("Only instances have fields.");
         }
 
         ObjInstance* instance = AS_INSTANCE(peek(1));
@@ -382,6 +383,45 @@ static InterpretResult run() {
         }
         break;
       }
+      case OP_GET_SUBSCRIPT: {
+        if (!IS_ARRAY(peek(1))) {
+          RUNTIME_ERROR("Only arrays can be indexed.");
+        }
+
+        if (!IS_NUMBER(peek(0))) {
+          RUNTIME_ERROR("Array subscript must be a number.");
+        }
+
+        int index = (int)AS_NUMBER(pop());
+        ObjArray* array = AS_ARRAY(pop());
+
+        if (index < 0 || index >= array->elements.count) {
+          RUNTIME_ERROR("Array index out of bounds.");
+        }
+
+        push(array->elements.values[index]);
+        break;
+      }
+      case OP_SET_SUBSCRIPT: {
+        if (!IS_ARRAY(peek(2))) {
+          RUNTIME_ERROR("Only arrays can be indexed.");
+        }
+
+        if (!IS_NUMBER(peek(1))) {
+          RUNTIME_ERROR("Array subscript must be a number.");
+        }
+
+        Value value = pop();
+        int index = (int)AS_NUMBER(pop());
+        ObjArray* array = AS_ARRAY(pop());
+
+        if (index < 0 || index >= array->elements.count) {
+          RUNTIME_ERROR("Array index out of bounds.");
+        }
+
+        push(array->elements.values[index] = value);
+        break;
+      }
       case OP_EQUAL: {
         Value b = pop();
         Value a = pop();
@@ -398,8 +438,7 @@ static InterpretResult run() {
           double a = AS_NUMBER(pop());
           push(NUMBER_VAL(a + b));
         } else {
-          runtimeError("Operands must be two numbers or two strings.");
-          return INTERPRET_RUNTIME_ERROR;
+          RUNTIME_ERROR("Operands must be two numbers or two strings.");
         }
         break;
       }
@@ -409,8 +448,7 @@ static InterpretResult run() {
       case OP_NOT: push(BOOL_VAL(isFalsey(pop()))); break;
       case OP_NEGATE:
         if (!IS_NUMBER(peek(0))) {
-          runtimeError("Operand must be a number.");
-          return INTERPRET_RUNTIME_ERROR;
+          RUNTIME_ERROR("Operand must be a number.");
         }
         push(NUMBER_VAL(-AS_NUMBER(pop())));
         break;
@@ -439,7 +477,7 @@ static InterpretResult run() {
         if (!callValue(peek(arg_count), arg_count)) {
           return INTERPRET_RUNTIME_ERROR;
         }
-        frame = &vm.frames[vm.frame_count - 1];
+        LOAD_FRAME();
         break;
       }
       case OP_INVOKE: {
@@ -448,7 +486,7 @@ static InterpretResult run() {
         if (!invoke(method, arg_count)) {
           return INTERPRET_RUNTIME_ERROR;
         }
-        frame = &vm.frames[vm.frame_count - 1];
+        LOAD_FRAME();
         break;
       }
       case OP_SUPER_INVOKE: {
@@ -458,7 +496,7 @@ static InterpretResult run() {
         if (!invokeFromClass(superclass, method, arg_count)) {
           return INTERPRET_RUNTIME_ERROR;
         }
-        frame = &vm.frames[vm.frame_count - 1];
+        LOAD_FRAME();
         break;
       }
       case OP_CLOSURE: {
@@ -493,7 +531,7 @@ static InterpretResult run() {
 
         vm.stack_top = frame->slots;
         push(result);
-        frame = &vm.frames[vm.frame_count - 1];
+        LOAD_FRAME();
         break;
       }
       case OP_CLASS: {
@@ -503,8 +541,7 @@ static InterpretResult run() {
       case OP_INHERIT: {
         Value superclass = peek(1);
         if (!IS_CLASS(superclass)) {
-          runtimeError("Superclass must be a class.");
-          return INTERPRET_RUNTIME_ERROR;
+          RUNTIME_ERROR("Superclass must be a class.");
         }
 
         ObjClass* subclass = AS_CLASS(peek(0));
@@ -525,18 +562,19 @@ static InterpretResult run() {
         for (int i = element_count; i > 0; i--) {
           elements[array->elements.count++] = peek(i);
         }
-        pop();
-        vm.stack_top -= element_count;
+        vm.stack_top -= element_count + 1;
         push(OBJ_VAL(array));
         break;
       }
     }
   }
+#undef LOAD_FRAME
 #undef READ_BYTE
 #undef READ_SHORT
 #undef READ_CONSTANT
 #undef READ_STRING
 #undef BINARY_OP
+#undef RUNTIME_ERROR
 }
 
 InterpretResult interpret(const char* source) {

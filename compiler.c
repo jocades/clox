@@ -561,12 +561,24 @@ static void array(bool can_assign) {
   emitBytes(OP_ARRAY, element_count);
 }
 
+static void subscript(bool can_assign) {
+  expression();
+  consume(TOKEN_RIGHT_BRACKET, "Expected ']' after subscript.");
+
+  if (can_assign && match(TOKEN_EQUAL)) {
+    expression();
+    emitByte(OP_SET_SUBSCRIPT);
+  } else {
+    emitByte(OP_GET_SUBSCRIPT);
+  }
+}
+
 ParseRule rules[] = {
   [TOKEN_LEFT_PAREN] = {grouping, call, PREC_CALL},
   [TOKEN_RIGHT_PAREN] = {NULL, NULL, PREC_NONE},
   [TOKEN_LEFT_BRACE] = {NULL, NULL, PREC_NONE},
   [TOKEN_RIGHT_BRACE] = {NULL, NULL, PREC_NONE},
-  [TOKEN_LEFT_BRACKET] = {array, NULL, PREC_CALL},
+  [TOKEN_LEFT_BRACKET] = {array, subscript, PREC_CALL},
   [TOKEN_RIGHT_BRACKET] = {NULL, NULL, PREC_NONE},
   [TOKEN_COMMA] = {NULL, NULL, PREC_NONE},
   [TOKEN_DOT] = {NULL, dot, PREC_CALL},

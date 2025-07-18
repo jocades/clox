@@ -1,5 +1,3 @@
-var N = 1000000;
-
 var start = clock();
 var batch = 0;
 while (clock() - start < 10) {
@@ -16,5 +14,5 @@ print clock() - start;
 // newArray + writeValueArray = 1.13689e+07
 // newArrayWithCapacity + inPlace = 1.54185e+07
 
-// ((1.54185e7 - 1.13689e7) / 1.13689e7) * 100
+// ((1.54185 - 1.13689) / 1.13689) * 100
 // IMPROVEMENT ~= 35.62%
