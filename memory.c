@@ -20,14 +20,15 @@
 
 void* reallocate(void* pointer, size_t old_size, size_t new_size) {
   vm.bytes_allocated += new_size - old_size;
+
   if (new_size > old_size) {
 #if DEBUG_STRESS_GC
     collectGarbage();
 #endif
-  }
 
-  if (vm.bytes_allocated > vm.next_gc) {
-    collectGarbage();
+    if (vm.bytes_allocated > vm.next_gc) {
+      collectGarbage();
+    }
   }
 
   if (new_size == 0) {
@@ -83,9 +84,7 @@ void blackenObject(Obj* object) {
   switch (object->type) {
     case OBJ_ARRAY: {
       ObjArray* array = (ObjArray*)object;
-      for (int i = 0; i < array->elements.count; i++) {
-        markValue(array->elements.values[i]);
-      }
+      markArray(&array->elements);
       break;
     }
     case OBJ_BOUND_METHOD: {
